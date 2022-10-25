@@ -47,18 +47,30 @@ const resolvers = {
       return { token, user };
     },
 
-    saveBook: async (_, { bookId }, context) => {
+    saveBook: async (_, args, context) => {
       if (context.user) {
-        const updatedReader = await User.findByIdAndDelete(
-          {
-            _id: context.user._id,
-          },
-          { $pull: { savedBooks: { bookId } } },
-          { new: true }
+        const updatedReader = await User.findByIdAndUpdate(
+          { _id: context.user._id },
+          { $addToSet: { savedBooks: args.input } },
+          { new: true, runValidators: true }
         );
         return updatedReader;
       }
-      throw new AuthenticationError("You need to be logged in");
+      throw new AuthenticationError("You must be logged in!");
+    },
+
+    removeBook: async (_, { bookId }, context) => {
+      const updatedReader = await User.findByIdAndUpdate(
+        {
+          _id: context.user._id,
+        },
+        { $pull: { savedBooks: { bookId } } },
+        { new: true }
+      );
+      if (!updatedUser) {
+        return console.log("user not found");
+      }
+      return updatedReader;
     },
   },
 };
